@@ -9,9 +9,8 @@ pip install tidfit
 ### Overview
 
 This package provides a tiny fitting routine to fit a curve to pairs of points and draw it
-with some error bands. Only depends on `numpy`, `scipy.optimize.curve_fit`, and `matplotlib`.
-
-
+with some error bands. Only depends on `numpy`, `scipy`, and `matplotlib`. It's essentially
+a wrapper around `scipy.optimize.curve_fit`.
 
 To specify the function to fit, one can use an `eval`-able string expression,
 which needs one `x` to serve as the independent variable. 
@@ -30,7 +29,7 @@ ax.errorbar(x, y, yerr=y**0.5, fmt="o", label="data")
 
 fit("a*x+b", x, y)
 ```
-<img src="images/image1.png" width="350px" />
+<img src="images/image1.png" width="450px" />
 
 A boolean `mask` specifies which points to consider in each fit.
 
@@ -48,7 +47,7 @@ gaussian = "const + peak * np.exp(-((x - mu) ** 2) / (2 * sigma) ** 2)"
 fit(gaussian, x, y, sigma=y**0.5, mask=(x < -1), color="C1")
 fit(gaussian, x, y, sigma=y**0.5, mask=(x > +1), color="C2")
 ```
-<img src="images/image2.png" width="350px" />
+<img src="images/image2.png" width="450px" />
 
 An array of initial parameter values, `p0`, is also accepted as a keyword argument to `fit` and passed through to `curve_fit`
 but keeping track of an array while modifying the fitting function is cumbersome.
@@ -66,7 +65,7 @@ def f(x, const=None, peak=None, mu1=+2, sigma1=1, mu2=-2, sigma2=1):
 
 fit(f, x, y, sigma=y**0.5)
 ```
-<img src="images/image3.png" width="350px" />
+<img src="images/image3.png" width="450px" />
 
 The object returned by `fit` has a nice representation in notebooks
 ```python
