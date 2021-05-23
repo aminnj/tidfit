@@ -9,8 +9,10 @@ from scipy.optimize import curve_fit
 from io import BytesIO
 from tokenize import tokenize, NAME
 
+
 class BandObject(matplotlib.patches.Rectangle):
     pass
+
 
 class BandObjectHandler(object):
     def legend_artist(self, legend, orig_handle, fontsize, handlebox):
@@ -38,10 +40,9 @@ class BandObjectHandler(object):
         )
         handlebox.add_artist(patch)
         return patch
-    
-def curve_fit_wrapper(
-    func, xdata, ydata, sigma=None, absolute_sigma=False, **kwargs
-):
+
+
+def curve_fit_wrapper(func, xdata, ydata, sigma=None, absolute_sigma=False, **kwargs):
     """
     Wrapper around `scipy.optimize.curve_fit`. Initial parameters (`p0`)
     can be set in the function definition with defaults for kwargs
@@ -49,17 +50,14 @@ def curve_fit_wrapper(
     """
 
     if func.__defaults__ and len(func.__defaults__) + 1 == func.__code__.co_argcount:
+        func.__defaults__ = tuple(1 if p is None else p for p in func.__defaults__)
         if "p0" not in kwargs:
             kwargs["p0"] = func.__defaults__
     popt, pcov = curve_fit(
-        func,
-        xdata,
-        ydata,
-        sigma=sigma,
-        absolute_sigma=absolute_sigma,
-        **kwargs,
+        func, xdata, ydata, sigma=sigma, absolute_sigma=absolute_sigma, **kwargs,
     )
     return popt, pcov
+
 
 def expr_to_lambda(expr):
     """
@@ -96,6 +94,7 @@ def expr_to_lambda(expr):
     )  # remove duplicates, preserving order (python>=3.7)
     lambdastr = f"lambda x,{','.join(varnames)}: {expr}"
     return eval(lambdastr)
+
 
 def fit(
     func,
@@ -153,10 +152,13 @@ def fit(
 
     absolute_sigma = sigma is not None
     if w is not None:
-        sigma = 1 / w
+        sigma = 1 / np.asarray(w)
 
     if mask is None:
         mask = slice(None)
+
+    xdata = np.asarray(xdata)
+    ydata = np.asarray(ydata)
 
     xdata_mask = xdata[mask]
     ydata_mask = ydata[mask]
@@ -227,7 +229,11 @@ def fit(
         matplotlib.legend.Legend.update_default_handler_map(
             {BandObject: BandObjectHandler()}
         )
-        ax.add_patch(BandObject((0, 0), 0, 0, label=label, color=color, alpha=0.25, visible=False))
+        ax.add_patch(
+            BandObject(
+                (0, 0), 0, 0, label=label, color=color, alpha=0.25, visible=False
+            )
+        )
 
         if legend:
             ax.legend()
