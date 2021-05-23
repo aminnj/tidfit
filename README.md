@@ -12,7 +12,6 @@ This package provides a tiny fitting routine to fit a curve to pairs of points a
 with some error bands. Only depends on `numpy`, `scipy`, and `matplotlib`.
 
 
-Test data:
 ```python
 x = np.array([0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95])
 y = np.array([184., 193., 199., 208., 200., 225., 216., 190., 212., 173.])
