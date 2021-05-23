@@ -2,7 +2,7 @@ import numpy as np
 
 import os
 
-from tidfit import fit, expr_to_lambda
+from tidfit.fit import fit, expr_to_lambda
 
 np.set_printoptions(linewidth=120)
 
