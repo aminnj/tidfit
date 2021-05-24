@@ -8,14 +8,14 @@ pip install tidfit
 
 ### Overview
 
-This package provides a tiny fitting routine to fit a curve to pairs of points and draw it
+This package provides a tiny routine to fit a curve to pairs of points and draw it
 with some error bands. Only depends on `numpy`, `scipy`, and `matplotlib`. It's essentially
 a wrapper around `scipy.optimize.curve_fit`.
 
 To specify the function to fit, one can use an `eval`-able string expression,
 which needs one `x` to serve as the independent variable. 
 The remaining variables are considered as fittable function parameters.
-Of course, `fit` takes regular callable function (`lambda x,a,b: a*x+b`) as well, but who has the time to type out 10 more characters?
+Of course, `fit` takes a regular callable function (`lambda x,a,b: a*x+b`) as well, but who has the time to type out 10 more characters?
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -42,7 +42,7 @@ x = bins[:-1] + 0.25
 fig, ax = plt.subplots()
 ax.errorbar(x, y, yerr=y**0.5, fmt="o", ms=5)
 
-gaussian = "const + peak * np.exp(-((x - mu) ** 2) / (2 * sigma) ** 2)"
+gaussian = "const + peak * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))"
 
 fit(gaussian, x, y, sigma=y**0.5, mask=(x < -1), color="C1")
 fit(gaussian, x, y, sigma=y**0.5, mask=(x > +1), color="C2")
@@ -53,14 +53,11 @@ An array of initial parameter values, `p0`, is also accepted as a keyword argume
 but keeping track of an array while modifying the fitting function is cumbersome.
 If an explicit function is specified, any default arguments are extracted and used as the initial `p0` to `curve_fit`.
 ```python
-fig, ax = plt.subplots()
-ax.errorbar(x, y, yerr=y**0.5, fmt="o", ms=5)
-
 def f(x, const=None, peak=None, mu1=+2, sigma1=1, mu2=-2, sigma2=1):
     return (
         const
-        + peak * np.exp(-((x - mu1) ** 2) / (2 * sigma1) ** 2)
-        + peak * np.exp(-((x - mu2) ** 2) / (2 * sigma2) ** 2)
+        + peak * np.exp(-((x - mu1) ** 2) / (2 * sigma1 ** 2))
+        + peak * np.exp(-((x - mu2) ** 2) / (2 * sigma2 ** 2))
     )
 
 fit(f, x, y, sigma=y**0.5)
@@ -79,8 +76,7 @@ b | 1 ± 0.5774
 
 but `out` is just a `dict`, and provides two ways of getting the parameter names, values, and errors:
 ``` python
-from pprint import pprint
-pprint(out)
+print(out)
 ```
 
 ```python
