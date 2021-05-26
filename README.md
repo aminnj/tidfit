@@ -19,14 +19,15 @@ Of course, `fit` takes a regular callable function (`lambda x,a,b: a*x+b`) as we
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
-from tidfit import fit
 
 x = np.array([0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95])
 y = np.array([184., 193., 199., 208., 200., 225., 216., 190., 212., 173.])
 
 fig, ax = plt.subplots()
 ax.errorbar(x, y, yerr=y**0.5, fmt="o", label="data")
-
+```
+```python
+from tidfit import fit
 fit("a*x+b", x, y)
 ```
 <img src="images/image1.png" width="450px" />
@@ -49,7 +50,7 @@ fit(gaussian, x, y, sigma=y**0.5, mask=(x > +1), color="C2")
 ```
 <img src="images/image2.png" width="450px" />
 
-An array of initial parameter values, `p0`, is also accepted as a keyword argument to `fit` and passed through to `curve_fit`
+An array of initial parameter values, `p0`, is also accepted as a keyword argument to `fit` and passed through to `curve_fit`,
 but keeping track of an array while modifying the fitting function is cumbersome.
 If an explicit function is specified, any default arguments are extracted and used as the initial `p0` to `curve_fit`.
 ```python
