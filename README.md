@@ -12,10 +12,6 @@ This package provides a tiny routine to fit a curve to pairs of points and draw 
 with some error bands. Only depends on `numpy`, `scipy`, and `matplotlib`. It's essentially
 a wrapper around `scipy.optimize.curve_fit`.
 
-To specify the function to fit, one can use an `eval`-able string expression,
-which needs one `x` to serve as the independent variable. 
-The remaining variables are considered as fittable function parameters.
-Of course, `fit` takes a regular callable function (`lambda x,a,b: a*x+b`) as well, but who has the time to type out 10 more characters?
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,6 +22,12 @@ y = np.array([184., 193., 199., 208., 200., 225., 216., 190., 212., 173.])
 fig, ax = plt.subplots()
 ax.errorbar(x, y, yerr=y**0.5, fmt="o", label="data")
 ```
+
+To specify the function to fit, one can use an `eval`-able string expression,
+which needs one `x` to serve as the independent variable. 
+The remaining variables are considered as fittable function parameters.
+Of course, `fit` takes a regular callable function (`lambda x,a,b: a*x+b`) as well, but who has the time to type out 10 more characters?
+
 ```python
 from tidfit import fit
 fit("a*x+b", x, y)
