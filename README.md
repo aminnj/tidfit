@@ -32,7 +32,7 @@ Of course, `fit` takes a regular callable function (`lambda x,a,b: a*x+b`) as we
 from tidfit import fit
 fit("a*x+b", x, y)
 ```
-<img src="images/image1.png?" width="450px" />
+<img src="images/image1.png" width="450px" />
 
 A boolean `mask` specifies which points to consider in each fit.
 
