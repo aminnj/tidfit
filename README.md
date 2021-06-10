@@ -1,6 +1,8 @@
 ## tidfit
 
 ![Tests](https://github.com/aminnj/tidfit/actions/workflows/python-app.yml/badge.svg)
+[![PyPI](https://img.shields.io/pypi/v/tidfit.svg)](https://pypi.python.org/pypi/tidfit/)
+
 
 ```bash
 pip install tidfit
