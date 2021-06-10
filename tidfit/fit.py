@@ -8,6 +8,7 @@ import matplotlib.legend
 from scipy.optimize import curve_fit
 from io import BytesIO
 from tokenize import tokenize, NAME
+import warnings
 
 
 class BandObject(matplotlib.patches.Rectangle):
@@ -40,6 +41,11 @@ class BandObjectHandler(object):
         )
         handlebox.add_artist(patch)
         return patch
+
+
+def has_uniform_spacing(obj, epsilon=1e-6):
+    offsets = np.ediff1d(obj)
+    return np.all(np.abs(offsets - offsets[0]) < epsilon)
 
 
 def curve_fit_wrapper(func, xdata, ydata, sigma=None, absolute_sigma=False, **kwargs):
@@ -104,6 +110,7 @@ def fit(
     sigma=None,
     curve_fit_kwargs=dict(),
     nsamples=200,
+    oversamplex=True,
     mask=None,
     ax=None,
     draw=True,
@@ -125,6 +132,8 @@ def fit(
        dict of extra kwargs to pass to `scipy.optimize.curve_fit`
     nsamples : int, default 200
         number of samples/bootstraps for calculating error bands
+    oversamplex : bool, default True
+        oversample `xdata` for plotting to get a smoother curve
     mask : array of positive booleans for which values to consider in the fit
     ax : matplotlib AxesSubplot object, default None
     draw : bool, default True
@@ -135,7 +144,7 @@ def fit(
        legend entry label. Parameters will be appended unless this
        is empty.
     legend : bool, default True
-        if True and the histogram has a label, draw the legend
+        draw a legend
     Returns
     -------
     dict of
@@ -157,11 +166,11 @@ def fit(
     if mask is None:
         mask = slice(None)
 
-    xdata = np.asarray(xdata)
-    ydata = np.asarray(ydata)
+    xdata_raw = np.asarray(xdata)
+    ydata_raw = np.asarray(ydata)
 
-    xdata_mask = xdata[mask]
-    ydata_mask = ydata[mask]
+    xdata_mask = xdata_raw[mask]
+    ydata_mask = ydata_raw[mask]
     if sigma is not None:
         sigma_mask = sigma[mask]
     else:
@@ -170,18 +179,6 @@ def fit(
     popt, pcov = curve_fit_wrapper(
         func, xdata_mask, ydata_mask, sigma=sigma_mask, absolute_sigma=absolute_sigma,
     )
-
-    fit_ydata = func(xdata, *popt)
-
-    if np.isfinite(pcov).all():
-        vopts = np.random.multivariate_normal(popt, pcov, nsamples)
-        sampled_ydata = np.vstack([func(xdata, *vopt).T for vopt in vopts])
-        sampled_stds = np.nanstd(sampled_ydata, axis=0)
-    else:
-        import warnings
-
-        warnings.warn("Covariance matrix contains nan/inf")
-        sampled_stds = np.ones(len(xdata)) * np.nan
 
     class wrapper(dict):
         def _repr_html_(self):
@@ -212,14 +209,33 @@ def fit(
 
             ax = plt.gca()
 
+        if has_uniform_spacing(xdata_raw):
+            xdata_fine = np.linspace(xdata_raw.min(), xdata_raw.max(), len(xdata) * 5)
+        else:
+            xdata_fine = np.vstack(
+                [
+                    xdata_raw,
+                    xdata_raw + np.concatenate([np.diff(xdata_raw) / 2, [np.nan]]),
+                ]
+            ).T.flatten()[:-1]
+        fit_ydata = func(xdata_fine, *popt)
+
+        if np.isfinite(pcov).all():
+            vopts = np.random.multivariate_normal(popt, pcov, nsamples)
+            sampled_ydata = np.vstack([func(xdata_fine, *vopt).T for vopt in vopts])
+            sampled_stds = np.nanstd(sampled_ydata, axis=0)
+        else:
+            warnings.warn("Covariance matrix contains nan/inf")
+            sampled_stds = np.ones(len(xdata_fine)) * np.nan
+
         if label:
             for name, x in params.items():
                 label += "\n    "
                 label += rf"{name} = {x['value']:.3g} $\pm$ {x['error']:.3g}"
-        ax.plot(xdata, fit_ydata, color=color, zorder=3)
+        ax.plot(xdata_fine, fit_ydata, color=color, zorder=3)
 
         ax.fill_between(
-            xdata,
+            xdata_fine,
             fit_ydata - sampled_stds,
             fit_ydata + sampled_stds,
             facecolor=color,
