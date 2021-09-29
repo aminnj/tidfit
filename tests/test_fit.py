@@ -87,5 +87,21 @@ def test_mask():
     assert fit("a+b*x", x, y, mask=(y > 1.5), draw=False)["params"]["a"]["value"] > 1.5
 
 
+def test_dates():
+    import datetime
+
+    dates = np.array(
+        [
+            datetime.datetime(2021, 1, 1),
+            datetime.datetime(2021, 2, 1),
+            datetime.datetime(2021, 4, 1),
+            datetime.datetime(2021, 7, 1),
+        ]
+    )
+    y = [10, 20, 40, 50]
+    res = fit("a*x+b", dates, y)
+    allclose(res["parvalues"], [0.221334315, -4109.72636])
+
+
 if __name__ == "__main__":
     pytest.main(["--capture=no", __file__])

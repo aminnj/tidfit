@@ -65,6 +65,23 @@ def curve_fit_wrapper(func, xdata, ydata, sigma=None, absolute_sigma=False, **kw
     return popt, pcov
 
 
+def is_datelike(obj):
+    if "Timestamp" in str(type(obj)):
+        return True
+    elif "datetime" in str(type(obj[0])):
+        return True
+    elif hasattr(obj, "dtype"):
+        return obj.dtype.type == np.datetime64
+    else:
+        return False
+
+
+def convert_dates(obj):
+    import matplotlib.dates
+
+    return matplotlib.dates.date2num(obj)
+
+
 def expr_to_lambda(expr):
     """
     Converts a string expression like
@@ -159,6 +176,9 @@ def fit(
     if (w is not None) and (sigma is not None):
         raise Exception("Weights and sigma cannot be specified simultaneously")
 
+    if is_datelike(xdata):
+        xdata = convert_dates(xdata)
+
     absolute_sigma = sigma is not None
     if w is not None:
         sigma = 1 / np.asarray(w)
@@ -209,15 +229,19 @@ def fit(
 
             ax = plt.gca()
 
-        if has_uniform_spacing(xdata_raw):
-            xdata_fine = np.linspace(xdata_raw.min(), xdata_raw.max(), len(xdata) * 5)
-        else:
-            xdata_fine = np.vstack(
-                [
-                    xdata_raw,
-                    xdata_raw + np.concatenate([np.diff(xdata_raw) / 2, [np.nan]]),
-                ]
-            ).T.flatten()[:-1]
+        xdata_fine = xdata_raw
+        if oversamplex:
+            if has_uniform_spacing(xdata_raw):
+                xdata_fine = np.linspace(
+                    xdata_raw.min(), xdata_raw.max(), len(xdata) * 5
+                )
+            else:
+                xdata_fine = np.vstack(
+                    [
+                        xdata_raw,
+                        xdata_raw + np.concatenate([np.diff(xdata_raw) / 2, [np.nan]]),
+                    ]
+                ).T.flatten()[:-1]
         fit_ydata = func(xdata_fine, *popt)
 
         if np.isfinite(pcov).all():
