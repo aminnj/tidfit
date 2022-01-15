@@ -68,6 +68,8 @@ def curve_fit_wrapper(func, xdata, ydata, sigma=None, absolute_sigma=False, **kw
 def is_datelike(obj):
     if "Timestamp" in str(type(obj)):
         return True
+    elif ".Datetime" in str(type(obj)):
+        return True
     elif "datetime" in str(type(obj[0])):
         return True
     elif hasattr(obj, "dtype"):
@@ -229,7 +231,7 @@ def fit(
 
             ax = plt.gca()
 
-        xdata_fine = xdata_raw
+        xdata_fine = np.sort(xdata_raw)
         if oversamplex:
             if has_uniform_spacing(xdata_raw):
                 xdata_fine = np.linspace(
