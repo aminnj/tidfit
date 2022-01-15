@@ -233,15 +233,16 @@ def fit(
 
         xdata_fine = np.sort(xdata_raw)
         if oversamplex:
-            if has_uniform_spacing(xdata_raw):
+            xdr = np.sort(xdata_raw)
+            if has_uniform_spacing(xdr):
                 xdata_fine = np.linspace(
-                    xdata_raw.min(), xdata_raw.max(), len(xdata) * 5
+                    xdr.min(), xdr.max(), len(xdata) * 5
                 )
             else:
                 xdata_fine = np.vstack(
                     [
-                        xdata_raw,
-                        xdata_raw + np.concatenate([np.diff(xdata_raw) / 2, [np.nan]]),
+                        xdr,
+                        xdr + np.concatenate([np.diff(xdr) / 2, [np.nan]]),
                     ]
                 ).T.flatten()[:-1]
         fit_ydata = func(xdata_fine, *popt)
